@@ -1,0 +1,2 @@
+Aquí van los PDF GRATIS (por ejemplo, prod_reventa_gratis.pdf) si decides alojarlos en la web en vez de en el File manager de MailerLite.
+NUNCA subas aquí la edición de pago: el repositorio es público y cualquiera podría descargarla.

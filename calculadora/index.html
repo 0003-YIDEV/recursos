@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de interés compuesto · Finmente Noir</title>
+<meta name="description" content="Calculadora gratuita de interés compuesto de Finmente Noir: haz tus números y descubre cuánto cuesta esperar para empezar a invertir.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0A0C10;
+    --card: #141C26;
+    --card-2: #1B2531;
+    --border: #26323F;
+    --gold: #D4A93C;
+    --gold-glow: #F2C766;
+    --cyan: #2ED8D0;
+    --text: #F2F0EA;
+    --muted: #AEB6C1;
+    --font: "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    line-height: 1.5;
+  }
+
+  .wrap {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 32px 16px 48px;
+  }
+
+  /* Cabecera */
+  header { text-align: center; margin-bottom: 32px; }
+
+  .wordmark {
+    margin: 0;
+    font-size: clamp(2rem, 8vw, 3.25rem);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    color: var(--gold-glow);
+    text-shadow: 0 0 18px rgba(242, 199, 102, 0.45), 0 0 2px rgba(212, 169, 60, 0.9);
+  }
+
+  .tagline { margin: 4px 0 20px; color: var(--muted); font-weight: 500; }
+
+  h1 { margin: 0; font-size: clamp(1.25rem, 4.5vw, 1.6rem); font-weight: 600; }
+
+  .lead { margin: 8px auto 0; max-width: 560px; color: var(--muted); }
+
+  /* Tarjetas y secciones */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  h2 { margin: 0 0 16px; font-size: 1.1rem; font-weight: 600; }
+
+  /* Formulario */
+  .fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    gap: 16px;
+  }
+
+  .field label, .field .label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--muted);
+  }
+
+  .field input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font: inherit;
+    font-size: 1rem;
+  }
+
+  .field input:disabled { opacity: 0.5; }
+
+  input:focus-visible, button:focus-visible, a:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+  }
+
+  .scenarios-field { margin-top: 20px; }
+
+  .scenarios { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .scenario {
+    flex: 1 1 120px;
+    padding: 12px 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .scenario strong { display: block; font-size: 1.15rem; }
+
+  .scenario[aria-pressed="true"] {
+    border-color: var(--gold);
+    background: rgba(212, 169, 60, 0.12);
+    color: var(--gold-glow);
+    box-shadow: 0 0 12px rgba(242, 199, 102, 0.25);
+  }
+
+  .hint { margin: 10px 0 0; font-size: 0.85rem; color: var(--muted); }
+
+  /* Resultados */
+  .results {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    gap: 12px;
+  }
+
+  .stat {
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .stat .label { font-size: 0.85rem; color: var(--muted); }
+
+  .stat .value {
+    margin-top: 4px;
+    font-size: clamp(1.3rem, 5vw, 1.6rem);
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .stat .sub { font-size: 0.8rem; color: var(--muted); }
+
+  .stat.main { border-color: var(--gold); }
+
+  .stat.main .value {
+    color: var(--gold-glow);
+    text-shadow: 0 0 14px rgba(242, 199, 102, 0.35);
+  }
+
+  /* Coste de esperar */
+  .wait-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    gap: 16px;
+    align-items: end;
+  }
+
+  .wait-cost {
+    font-size: clamp(1.8rem, 8vw, 2.4rem);
+    font-weight: 700;
+    color: var(--gold-glow);
+    text-shadow: 0 0 16px rgba(242, 199, 102, 0.4);
+    overflow-wrap: anywhere;
+  }
+
+  .wait-text { margin: 12px 0 0; }
+  .wait-ratio { margin: 6px 0 0; color: var(--muted); }
+  .notice { margin: 12px 0 0; color: var(--cyan); font-size: 0.9rem; }
+
+  /* Gráfico */
+  .chart-box { position: relative; width: 100%; height: 300px; }
+  .chart-box canvas { display: block; width: 100%; height: 100%; }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .legend li { display: flex; align-items: center; gap: 8px; }
+  .swatch { width: 22px; height: 0; border-top: 3px solid; }
+  .swatch.value { border-color: var(--gold); }
+  .swatch.contrib { border-color: var(--cyan); }
+  .swatch.delayed { border-color: var(--gold-glow); border-top-style: dashed; }
+
+  /* Notas y pie */
+  .note p { margin: 0 0 10px; font-size: 0.9rem; color: var(--muted); }
+  .note p:last-child { margin-bottom: 0; }
+  .note strong { color: var(--text); }
+
+  footer { margin-top: 28px; text-align: center; font-size: 0.8rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="wordmark">Finmente Noir</p>
+    <p class="tagline">Sistemas de Dinero e Ingresos Digitales</p>
+    <h1>Calculadora de interés compuesto</h1>
+    <p class="lead">Haz tus propios números. Y descubre cuánto te cuesta esperar para empezar.</p>
+  </header>
+
+  <main>
+    <section class="card" aria-labelledby="t-datos">
+      <h2 id="t-datos">Tus datos</h2>
+      <div class="fields">
+        <div class="field">
+          <label for="initial">Capital inicial (€)</label>
+          <input id="initial" type="number" inputmode="decimal" min="0" max="10000000" step="100" value="0">
+        </div>
+        <div class="field">
+          <label for="monthly">Aportación mensual (€)</label>
+          <input id="monthly" type="number" inputmode="decimal" min="0" max="100000" step="10" value="100">
+        </div>
+        <div class="field">
+          <label for="years">Años invirtiendo</label>
+          <input id="years" type="number" inputmode="numeric" min="1" max="60" step="1" value="40">
+        </div>
+        <div class="field">
+          <label for="inflation">Inflación anual (%)</label>
+          <input id="inflation" type="number" inputmode="decimal" min="0" max="15" step="0.1" value="2">
+        </div>
+      </div>
+
+      <div class="field scenarios-field">
+        <span class="label" id="scenario-label">Escenario de rentabilidad anual</span>
+        <div class="scenarios" role="group" aria-labelledby="scenario-label">
+          <button type="button" class="scenario" data-rate="0.04" aria-pressed="false"><strong>4 %</strong>Prudente</button>
+          <button type="button" class="scenario" data-rate="0.07" aria-pressed="true"><strong>7 %</strong>Medio</button>
+          <button type="button" class="scenario" data-rate="0.09" aria-pressed="false"><strong>9 %</strong>Histórico</button>
+        </div>
+        <p class="hint">Son supuestos, no promesas. Lee la nota de abajo para ver de dónde salen.</p>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="t-res">
+      <h2 id="t-res">Resultado</h2>
+      <div class="results" aria-live="polite">
+        <div class="stat main">
+          <div class="label">Valor final</div>
+          <div class="value" id="out-final">—</div>
+        </div>
+        <div class="stat">
+          <div class="label">Total aportado</div>
+          <div class="value" id="out-contributed">—</div>
+        </div>
+        <div class="stat">
+          <div class="label">Intereses generados</div>
+          <div class="value" id="out-interest">—</div>
+        </div>
+        <div class="stat">
+          <div class="label">En euros de hoy</div>
+          <div class="value" id="out-real">—</div>
+          <div class="sub" id="out-real-sub"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="t-wait">
+      <h2 id="t-wait">El coste de esperar</h2>
+      <div class="wait-row">
+        <div class="field">
+          <label for="delay">¿Y si empiezas dentro de… (años)?</label>
+          <input id="delay" type="number" inputmode="numeric" min="1" max="39" step="1" value="10">
+        </div>
+        <div>
+          <div class="label" style="font-size:0.85rem;color:var(--muted)">Lo que dejas de tener</div>
+          <div class="wait-cost" id="out-wait-cost">—</div>
+        </div>
+      </div>
+      <p class="wait-text" id="out-wait-text" aria-live="polite"></p>
+      <p class="wait-ratio" id="out-wait-ratio"></p>
+      <p class="notice" id="out-wait-notice" hidden>Con 1 año de inversión no hay margen para comparar retrasos. Sube los años invirtiendo para ver el coste de esperar.</p>
+    </section>
+
+    <section class="card" aria-labelledby="t-chart">
+      <h2 id="t-chart">Cómo crece, año a año</h2>
+      <p class="hint" style="margin:-8px 0 12px">Eje horizontal: años desde hoy.</p>
+      <div class="chart-box">
+        <canvas id="chart" role="img" aria-label="Gráfico de crecimiento"></canvas>
+      </div>
+      <ul class="legend">
+        <li><span class="swatch value" aria-hidden="true"></span>Valor total</li>
+        <li><span class="swatch contrib" aria-hidden="true"></span>Total aportado</li>
+        <li id="legend-delayed"><span class="swatch delayed" aria-hidden="true"></span>Valor si empiezas más tarde</li>
+      </ul>
+    </section>
+
+    <section class="card note" aria-labelledby="t-note">
+      <h2 id="t-note">De dónde salen los escenarios</h2>
+      <p>El índice MSCI World ha rentado de media un <strong>9,02 % anual desde 1987</strong> (bruto, en USD, sin comisiones ni impuestos). También cayó un <strong>57,46 % entre 2007 y 2009</strong>. Fuente: MSCI, datos a 30 sep 2026.</p>
+      <p>Por eso el escenario medio usa un 7 %: es un supuesto prudente, por debajo del histórico, y habrá años muy malos por el camino.</p>
+      <p><strong>Herramienta educativa. No es asesoramiento financiero.</strong> Rentabilidades pasadas no garantizan rentabilidades futuras. El cálculo no incluye comisiones ni impuestos.</p>
+    </section>
+  </main>
+
+  <footer>© Finmente Noir · Capitalización mensual con aportaciones a final de mes.</footer>
+</div>
+
+<script>
+/* CALC:START — funciones puras de cálculo (sin acceso al DOM). */
+const LIMITS = {
+  initial:   { min: 0, max: 10000000 },
+  monthly:   { min: 0, max: 100000 },
+  years:     { min: 1, max: 60 },
+  inflation: { min: 0, max: 15 },
+  delay:     { min: 1, max: 59 }
+};
+
+/* Convierte la entrada en número dentro de [min, max]. Vacío o no numérico cuenta como 0. */
+function sanitize(raw, limits, integer) {
+  let n = Number(String(raw).trim().replace(',', '.'));
+  if (String(raw).trim() === '' || !Number.isFinite(n)) n = 0;
+  if (integer) n = Math.round(n);
+  return Math.min(limits.max, Math.max(limits.min, n));
+}
+
+/* Valor final con capitalización mensual y aportaciones a final de mes. */
+function futureValue(initial, monthly, annualRate, years) {
+  const n = years * 12;
+  if (n <= 0) return initial;
+  const r = annualRate / 12;
+  if (r === 0) return initial + monthly * n;
+  const growth = Math.pow(1 + r, n);
+  return initial * growth + monthly * (growth - 1) / r;
+}
+
+/* Calcula todos los resultados a partir de entradas ya saneadas. */
+function compute({ initial, monthly, years, rate, inflation, delay }) {
+  const final = futureValue(initial, monthly, rate, years);
+  const contributed = initial + monthly * years * 12;
+  const real = final / Math.pow(1 + inflation / 100, years);
+
+  const waitEnabled = years > 1;
+  const effectiveDelay = waitEnabled ? Math.min(delay, years - 1) : 0;
+  let wait = { enabled: false, delay: 0 };
+  if (waitEnabled) {
+    const lateYears = years - effectiveDelay;
+    const lateFinal = futureValue(initial, monthly, rate, lateYears);
+    const lateContributed = initial + monthly * lateYears * 12;
+    const diffFinal = final - lateFinal;
+    const diffContributed = contributed - lateContributed;
+    wait = {
+      enabled: true,
+      delay: effectiveDelay,
+      final: lateFinal,
+      contributed: lateContributed,
+      diffFinal,
+      diffContributed,
+      ratio: diffContributed > 0 ? diffFinal / diffContributed : null
+    };
+  }
+
+  const yearly = [];
+  for (let y = 0; y <= years; y++) {
+    const delayedValue = wait.enabled
+      ? (y < wait.delay ? 0 : futureValue(initial, monthly, rate, y - wait.delay))
+      : null;
+    yearly.push({
+      year: y,
+      value: futureValue(initial, monthly, rate, y),
+      contributed: initial + monthly * y * 12,
+      delayedValue
+    });
+  }
+
+  return { final, contributed, interest: final - contributed, real, wait, yearly };
+}
+/* CALC:END */
+
+/* ---------- Interfaz ---------- */
+const $ = (id) => document.getElementById(id);
+const fields = {
+  initial:   { el: $('initial'),   integer: false },
+  monthly:   { el: $('monthly'),   integer: false },
+  years:     { el: $('years'),     integer: true },
+  inflation: { el: $('inflation'), integer: false },
+  delay:     { el: $('delay'),     integer: true }
+};
+const scenarioButtons = Array.from(document.querySelectorAll('.scenario'));
+let rate = 0.07;
+let lastResult = null;
+
+const euro = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+const decimal = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2, minimumFractionDigits: 2 });
+const percent = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 1 });
+
+function readInputs() {
+  const v = {};
+  for (const key in fields) {
+    v[key] = sanitize(fields[key].el.value, LIMITS[key], fields[key].integer);
+  }
+  v.rate = rate;
+  return v;
+}
+
+/* Al salir de un campo, se muestra el valor ya ajustado a su rango. */
+function normalizeField(key) {
+  const v = readInputs();
+  let value = v[key];
+  if (key === 'delay' && v.years > 1) value = Math.min(value, v.years - 1);
+  if (key === 'years') syncDelayLimit(value);
+  fields[key].el.value = String(value);
+}
+
+function syncDelayLimit(years) {
+  const delayEl = fields.delay.el;
+  delayEl.max = String(Math.max(1, years - 1));
+  delayEl.disabled = years <= 1;
+  if (years > 1 && Number(delayEl.value) > years - 1) delayEl.value = String(years - 1);
+}
+
+function plural(n, one, many) { return n === 1 ? one : many; }
+
+function render() {
+  const input = readInputs();
+  syncDelayLimit(input.years);
+  const res = compute(input);
+  lastResult = res;
+
+  $('out-final').textContent = euro.format(res.final);
+  $('out-contributed').textContent = euro.format(res.contributed);
+  $('out-interest').textContent = euro.format(res.interest);
+  $('out-real').textContent = euro.format(res.real);
+  $('out-real-sub').textContent = 'Con una inflación del ' + percent.format(input.inflation) + ' % anual';
+
+  const w = res.wait;
+  $('out-wait-notice').hidden = w.enabled;
+  $('legend-delayed').hidden = !w.enabled;
+  if (w.enabled) {
+    const yearsTxt = w.delay + ' ' + plural(w.delay, 'año', 'años');
+    $('out-wait-cost').textContent = '−' + euro.format(w.diffFinal);
+    if (w.diffContributed > 0) {
+      $('out-wait-text').textContent = 'Si empiezas dentro de ' + yearsTxt + ' acabarás con '
+        + euro.format(w.diffFinal) + ' menos, habiendo aportado solo '
+        + euro.format(w.diffContributed) + ' menos.';
+      $('out-wait-ratio').textContent = 'Por cada € que dejas de aportar, dejas de tener '
+        + decimal.format(w.ratio) + ' €.';
+    } else {
+      $('out-wait-text').textContent = 'Si empiezas dentro de ' + yearsTxt + ' acabarás con '
+        + euro.format(w.diffFinal) + ' menos, aportando exactamente lo mismo.';
+      $('out-wait-ratio').textContent = 'Es el mismo dinero, solo que trabajando menos tiempo.';
+    }
+  } else {
+    $('out-wait-cost').textContent = '—';
+    $('out-wait-text').textContent = '';
+    $('out-wait-ratio').textContent = '';
+  }
+
+  $('chart').setAttribute('aria-label',
+    'Gráfico de crecimiento: en ' + input.years + ' ' + plural(input.years, 'año', 'años')
+    + ' el valor llega a ' + euro.format(res.final) + ' habiendo aportado ' + euro.format(res.contributed) + '.');
+
+  drawChart(res);
+}
+
+/* ---------- Gráfico (canvas, sin librerías) ---------- */
+const COLORS = { gold: '#D4A93C', glow: '#F2C766', cyan: '#2ED8D0', grid: '#26323F', label: '#AEB6C1' };
+
+function niceStep(maxValue, targetTicks) {
+  const raw = maxValue / targetTicks;
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const norm = raw / mag;
+  const nice = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10;
+  return nice * mag;
+}
+
+function shortEuro(v) {
+  if (v >= 1e6) return decimal.format(v / 1e6).replace(/,00$/, '').replace(/0$/, '') + ' M €';
+  if (v >= 1e3) return Math.round(v / 1e3) + ' k €';
+  return Math.round(v) + ' €';
+}
+
+function drawChart(res) {
+  const canvas = $('chart');
+  const box = canvas.parentElement;
+  const dpr = window.devicePixelRatio || 1;
+  const width = box.clientWidth;
+  const height = box.clientHeight;
+  canvas.width = Math.round(width * dpr);
+  canvas.height = Math.round(height * dpr);
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, width, height);
+
+  const data = res.yearly;
+  const years = data[data.length - 1].year;
+  const maxVal = Math.max(1, ...data.map((d) => d.value));
+  const step = niceStep(maxVal, width < 420 ? 4 : 5);
+  const top = Math.ceil(maxVal / step) * step;
+
+  ctx.font = '12px ' + getComputedStyle(document.body).fontFamily;
+  const yLabels = [];
+  for (let v = 0; v <= top + step / 2; v += step) yLabels.push(v);
+  const padL = Math.max(...yLabels.map((v) => ctx.measureText(shortEuro(v)).width)) + 12;
+  const padR = 12, padT = 12, padB = 28;
+  const plotW = Math.max(10, width - padL - padR);
+  const plotH = Math.max(10, height - padT - padB);
+  const x = (y) => padL + (years === 0 ? 0 : (y / years) * plotW);
+  const yPos = (v) => padT + plotH - (v / top) * plotH;
+
+  // Rejilla y eje Y
+  ctx.lineWidth = 1;
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  for (const v of yLabels) {
+    const py = Math.round(yPos(v)) + 0.5;
+    ctx.strokeStyle = COLORS.grid;
+    ctx.beginPath(); ctx.moveTo(padL, py); ctx.lineTo(padL + plotW, py); ctx.stroke();
+    ctx.fillStyle = COLORS.label;
+    ctx.fillText(shortEuro(v), padL - 8, py);
+  }
+
+  // Eje X
+  const xStep = Math.max(1, niceStep(years, width < 420 ? 4 : 8));
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  for (let y = 0; y <= years; y += xStep) {
+    ctx.fillText(String(Math.round(y)), x(y), padT + plotH + 8);
+  }
+
+  // Área de aportado (cian)
+  ctx.beginPath();
+  ctx.moveTo(x(0), yPos(0));
+  data.forEach((d) => ctx.lineTo(x(d.year), yPos(d.contributed)));
+  ctx.lineTo(x(years), yPos(0));
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(46, 216, 208, 0.18)';
+  ctx.fill();
+  ctx.beginPath();
+  data.forEach((d, i) => (i ? ctx.lineTo : ctx.moveTo).call(ctx, x(d.year), yPos(d.contributed)));
+  ctx.strokeStyle = COLORS.cyan;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Escenario con retraso (discontinua)
+  if (res.wait.enabled) {
+    ctx.save();
+    ctx.setLineDash([6, 5]);
+    ctx.beginPath();
+    data.forEach((d, i) => (i ? ctx.lineTo : ctx.moveTo).call(ctx, x(d.year), yPos(d.delayedValue)));
+    ctx.strokeStyle = COLORS.glow;
+    ctx.globalAlpha = 0.75;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Valor total (dorado con glow)
+  ctx.save();
+  ctx.beginPath();
+  data.forEach((d, i) => (i ? ctx.lineTo : ctx.moveTo).call(ctx, x(d.year), yPos(d.value)));
+  ctx.strokeStyle = COLORS.gold;
+  ctx.lineWidth = 3;
+  ctx.shadowColor = 'rgba(242, 199, 102, 0.6)';
+  ctx.shadowBlur = 10;
+  ctx.stroke();
+  ctx.restore();
+}
+
+/* ---------- Eventos ---------- */
+for (const key in fields) {
+  fields[key].el.addEventListener('input', render);
+  fields[key].el.addEventListener('change', () => { normalizeField(key); render(); });
+}
+
+scenarioButtons.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    rate = Number(btn.dataset.rate);
+    scenarioButtons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+    render();
+  });
+});
+
+let resizeFrame = 0;
+window.addEventListener('resize', () => {
+  cancelAnimationFrame(resizeFrame);
+  resizeFrame = requestAnimationFrame(() => { if (lastResult) drawChart(lastResult); });
+});
+
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (lastResult) drawChart(lastResult); });
+render();
+</script>
+</body>
+</html>

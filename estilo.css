@@ -1,0 +1,19 @@
+:root{--bg:#0A0C10;--slate:#141C26;--grid:#26323F;--gold:#D4A93C;--glow:#F2C766;--cyan:#2ED8D0;--text:#F2F0EA;--muted:#AEB6C1}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% 0%,var(--slate) 0%,var(--bg) 70%) fixed;background-color:var(--bg);color:var(--text);font-family:Montserrat,system-ui,sans-serif;line-height:1.6}
+main{max-width:720px;margin:0 auto;padding:48px 16px 64px}
+a{color:var(--cyan)}
+header{text-align:center;margin-bottom:40px}
+header img{width:96px;height:96px;border-radius:50%}
+h1{font-size:2rem;margin:16px 0 4px}
+.lema{color:var(--gold);letter-spacing:.2em;font-size:.8rem;font-weight:700;text-transform:uppercase}
+h2{font-size:1.25rem;margin-top:40px;color:var(--glow)}
+.tarjeta{display:block;padding:24px;margin:16px 0;border:2px solid var(--grid);border-radius:20px;background:rgba(20,28,38,.85);text-decoration:none;color:var(--text)}
+.tarjeta:hover{border-color:var(--gold)}
+.tarjeta strong{display:block;font-size:1.15rem;color:var(--text)}
+.tarjeta span{color:var(--muted);font-size:.95rem}
+.etiqueta{display:inline-block;margin-top:10px;padding:2px 12px;border:1px solid var(--cyan);border-radius:999px;color:var(--cyan);font-size:.75rem;font-weight:700;letter-spacing:.1em}
+footer{margin-top:56px;padding-top:24px;border-top:1px solid var(--grid);color:var(--muted);font-size:.85rem;text-align:center}
+table{width:100%;border-collapse:collapse;font-size:.95rem}
+th,td{text-align:left;padding:10px;border-bottom:1px solid var(--grid);vertical-align:top}
+.hueco{background:var(--gold);color:var(--bg);padding:0 6px;border-radius:4px;font-weight:700}
